@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::units::{Selected, TargetPosition};
+use crate::units::{Selected, TargetPosition, SelectionCollider};
 
 pub struct InputPlugin;
 
@@ -14,8 +14,8 @@ fn handle_selection(
     buttons: Res<ButtonInput<MouseButton>>,
     window: Single<&Window>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
-    // On récupère l'Entité (son ID), sa position, sa taille, et on regarde si elle est déjà sélectionnée
-    q_units: Query<(Entity, &Transform, &Sprite, Option<&Selected>)>, 
+    // On récupère l'Entité (son ID), sa position, sa taille via le collider, et on regarde si elle est déjà sélectionnée
+    q_units: Query<(Entity, &Transform, &SelectionCollider, Option<&Selected>)>, 
 ) {
     // Si on vient de faire un clic gauche...
     if buttons.just_pressed(MouseButton::Left) {
@@ -27,13 +27,13 @@ fn handle_selection(
         let Ok(world_position) = camera.viewport_to_world_2d(camera_transform, cursor_position) else { return; };
 
         // 3. Vérifier si on a cliqué sur une unité
-        for (entity, transform, sprite, selected) in q_units.iter() {
-            let size = sprite.custom_size.unwrap_or(Vec2::splat(40.0)) / 2.0;
+        for (entity, transform, collider, selected) in q_units.iter() {
+            let size = collider.0;
             let pos = transform.translation.truncate(); // Retire l'axe Z
             
             // Calcul d'une "Bounding Box" (Boîte de collision) très basique
-            let is_clicked = world_position.x >= pos.x - size.x && world_position.x <= pos.x + size.x &&
-                             world_position.y >= pos.y - size.y && world_position.y <= pos.y + size.y;
+            let is_clicked = world_position.x >= pos.x - size && world_position.x <= pos.x + size &&
+                             world_position.y >= pos.y - size && world_position.y <= pos.y + size;
                              
             if is_clicked {
                 if selected.is_none() {
