@@ -7,7 +7,7 @@ impl Plugin for UnitsPlugin {
     fn build(&self, app: &mut App) {
         // On ajoute nos systèmes ici
         app.add_systems(Startup, setup_units)
-           .add_systems(Update, (animate_selection, move_units));
+           .add_systems(Update, (animate_selection, move_units, handle_separation));
     }
 }
 
@@ -27,6 +27,9 @@ pub struct TargetPosition(pub Vec2); // La destination finale
 #[derive(Component)]
 pub struct SelectionCollider(pub f32); // Rayon ou demi-taille pour la sélection au clic
 
+#[derive(Component)]
+pub struct PhysicalCollider(pub f32); // Zone physique solide de l'unité (pour éviter l'empilement)
+
 fn setup_units(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -40,6 +43,7 @@ fn setup_units(
         UnitType::TypeA,
         Speed(150.0),
         SelectionCollider(20.0), // Demi-taille du carré
+        PhysicalCollider(18.0), // Un peu plus petit que la sélection
     ));
 
     // Type B : Cercle (Vert)
@@ -50,6 +54,7 @@ fn setup_units(
         UnitType::TypeB,
         Speed(150.0),
         SelectionCollider(20.0), // Rayon du cercle
+        PhysicalCollider(18.0),
     ));
 
     // Type C : Triangle (Bleu)
@@ -64,6 +69,7 @@ fn setup_units(
         UnitType::TypeC,
         Speed(150.0),
         SelectionCollider(20.0), // Distance approximative depuis le centre
+        PhysicalCollider(18.0),
     ));
 }
 
@@ -110,6 +116,44 @@ fn move_units(
             // Sinon, on calcule le vecteur de déplacement normalisé (direction) * vitesse * dt
             let movement = direction.normalize() * speed.0 * time.delta_secs();
             transform.translation += movement.extend(0.0);
+        }
+    }
+}
+
+// Système pour éviter le chevauchement (Répulsion de proximité)
+// On utilise `iter_combinations_mut` qui permet d'évaluer chaque paire d'unités de manière unique
+fn handle_separation(
+    mut query: Query<(&mut Transform, &PhysicalCollider)>,
+    time: Res<Time>,
+) {
+    let mut combinations = query.iter_combinations_mut();
+    while let Some([(mut transform_a, collider_a), (mut transform_b, collider_b)]) = combinations.fetch_next() {
+        let pos_a = transform_a.translation.truncate();
+        let pos_b = transform_b.translation.truncate();
+        
+        let mut diff = pos_a - pos_b;
+        
+        // Si les entités sont parfaitement superposées, on crée une infime différence arbitraire
+        if diff.length_squared() < 0.001 {
+            diff = Vec2::new(1.0, 0.0);
+        }
+        
+        let distance = diff.length();
+        let min_distance = collider_a.0 + collider_b.0;
+
+        // Si la distance est plus petite que la somme des rayons des deux mechas, ils entrent en collision !
+        if distance < min_distance {
+            let overlap = min_distance - distance; // La profondeur de pénétration
+            let direction = diff.normalize();
+            
+            // Force de répulsion (on multiplie par l'overlap pour repousser plus fort si elles sont très incrustées)
+            // * 15.0 est un réglage modifiable pour que la poussée soit douce mais ferme.
+            let push_force = direction * overlap * 15.0 * time.delta_secs();
+
+            // L'unité A est repoussée dans la direction `diff` (car diff = pos_a - pos_b)
+            transform_a.translation += push_force.extend(0.0);
+            // L'unité B est repoussée dans la direction inverse
+            transform_b.translation -= push_force.extend(0.0);
         }
     }
 }
