@@ -15,8 +15,15 @@ pub fn handle_selection_input(
     let (camera, camera_transform) = *camera_query;
     let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_position) else { return; };
 
+    // Zone occupée par la minimap (308x308 pixels, placée à 10px du bord bas-droit)
+    let minimap_rect = Rect::from_corners(
+        Vec2::new(window.width() - 318.0, window.height() - 318.0),
+        Vec2::new(window.width(), window.height())
+    );
+    let is_over_minimap = minimap_rect.contains(cursor_position);
+
     // 1. Début de la sélection (On clique)
-    if buttons.just_pressed(MouseButton::Left) {
+    if buttons.just_pressed(MouseButton::Left) && !is_over_minimap {
         selection_state.start_pos = Some(world_pos);
         selection_state.end_pos = Some(world_pos);
     }
@@ -92,6 +99,13 @@ pub fn handle_movement_orders(
 ) {
     if buttons.just_pressed(MouseButton::Right) {
         let Some(cursor_position) = window.cursor_position() else { return; };
+        
+        let minimap_rect = Rect::from_corners(
+            Vec2::new(window.width() - 318.0, window.height() - 318.0),
+            Vec2::new(window.width(), window.height())
+        );
+        if minimap_rect.contains(cursor_position) { return; } // On ignore si on clique sur la minimap
+
         let (camera, camera_transform) = *camera_query;
         let Ok(world_position) = camera.viewport_to_world_2d(camera_transform, cursor_position) else { return; };
 
