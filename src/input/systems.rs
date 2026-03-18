@@ -6,7 +6,8 @@ pub fn handle_selection_input(
     mut commands: Commands,
     buttons: Res<ButtonInput<MouseButton>>,
     window: Single<&Window>,
-    camera_query: Single<(&Camera, &GlobalTransform)>,
+    // On sécurise la requête en ciblant uniquement la caméra principale (pas la minimap)
+    camera_query: Single<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
     mut selection_state: ResMut<SelectionState>,
     q_units: Query<(Entity, &Transform, &SelectionCollider, Option<&Selected>)>, 
 ) {
@@ -85,7 +86,8 @@ pub fn handle_movement_orders(
     mut commands: Commands,
     buttons: Res<ButtonInput<MouseButton>>,
     window: Single<&Window>,
-    camera_query: Single<(&Camera, &GlobalTransform)>,
+    // On sécurise également ici
+    camera_query: Single<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
     q_selected_units: Query<Entity, With<Selected>>, 
 ) {
     if buttons.just_pressed(MouseButton::Right) {
