@@ -1,11 +1,11 @@
 use bevy::prelude::*;
-use crate::units::Selected;
+use crate::units::{Selected, TargetPosition};
 
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, handle_selection);
+        app.add_systems(Update, (handle_selection, handle_movement_orders));
     }
 }
 
@@ -46,6 +46,27 @@ fn handle_selection(
                     commands.entity(entity).remove::<Selected>(); // On retire le composant
                 }
             }
+        }
+    }
+}
+
+fn handle_movement_orders(
+    mut commands: Commands,
+    buttons: Res<ButtonInput<MouseButton>>,
+    window: Single<&Window>,
+    camera_query: Single<(&Camera, &GlobalTransform)>,
+    // Optimisation : On ne requête que les entités qui ont le marqueur "Selected"
+    q_selected_units: Query<Entity, With<Selected>>, 
+) {
+    // Si on fait un clic droit, c'est un ordre de déplacement !
+    if buttons.just_pressed(MouseButton::Right) {
+        let Some(cursor_position) = window.cursor_position() else { return; };
+        let (camera, camera_transform) = *camera_query;
+        let Ok(world_position) = camera.viewport_to_world_2d(camera_transform, cursor_position) else { return; };
+
+        // On assigne la position cliquée comme cible à toutes les unités sélectionnées
+        for entity in q_selected_units.iter() {
+            commands.entity(entity).insert(TargetPosition(world_position));
         }
     }
 }
