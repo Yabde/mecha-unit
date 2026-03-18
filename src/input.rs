@@ -1,51 +1,114 @@
 use bevy::prelude::*;
 use crate::units::{Selected, TargetPosition, SelectionCollider};
 
+// On crée une ressource pour stocker l'état de notre boîte de sélection
+#[derive(Resource, Default)]
+pub struct SelectionState {
+    pub start_pos: Option<Vec2>,
+    pub end_pos: Option<Vec2>,
+}
+
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (handle_selection, handle_movement_orders));
+        // Initialisation de la ressource state
+        app.init_resource::<SelectionState>();
+        
+        // Ajout des systèmes
+        app.add_systems(Update, (
+            handle_selection_input,
+            draw_selection_box, 
+            handle_movement_orders
+        ));
     }
 }
 
-fn handle_selection(
+// Gère la logique de la souris (clic, glisser, relâcher)
+fn handle_selection_input(
     mut commands: Commands,
     buttons: Res<ButtonInput<MouseButton>>,
     window: Single<&Window>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
-    // On récupère l'Entité (son ID), sa position, sa taille via le collider, et on regarde si elle est déjà sélectionnée
+    mut selection_state: ResMut<SelectionState>,
     q_units: Query<(Entity, &Transform, &SelectionCollider, Option<&Selected>)>, 
 ) {
-    // Si on vient de faire un clic gauche...
-    if buttons.just_pressed(MouseButton::Left) {
-        // 1. Récupérer la fenêtre, la caméra, et la position de la souris
-        let Some(cursor_position) = window.cursor_position() else { return; };
-        let (camera, camera_transform) = *camera_query;
-        
-        // 2. Transformer la position de l'écran en position dans le monde du jeu
-        let Ok(world_position) = camera.viewport_to_world_2d(camera_transform, cursor_position) else { return; };
+    let Some(cursor_position) = window.cursor_position() else { return; };
+    let (camera, camera_transform) = *camera_query;
+    let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_position) else { return; };
 
-        // 3. Vérifier si on a cliqué sur une unité
-        for (entity, transform, collider, selected) in q_units.iter() {
-            let size = collider.0;
-            let pos = transform.translation.truncate(); // Retire l'axe Z
+    // 1. Début de la sélection (On clique)
+    if buttons.just_pressed(MouseButton::Left) {
+        selection_state.start_pos = Some(world_pos);
+        selection_state.end_pos = Some(world_pos);
+    }
+    
+    // 2. Mise à jour de la sélection (On maintient et on glisse)
+    if buttons.pressed(MouseButton::Left) {
+        if selection_state.start_pos.is_some() {
+            selection_state.end_pos = Some(world_pos);
+        }
+    }
+
+    // 3. Fin de la sélection (On relâche le clic)
+    if buttons.just_released(MouseButton::Left) {
+        if let (Some(start), Some(end)) = (selection_state.start_pos, selection_state.end_pos) {
+            // On calcule les limites de la boîte
+            let min_x = start.x.min(end.x);
+            let max_x = start.x.max(end.x);
+            let min_y = start.y.min(end.y);
+            let max_y = start.y.max(end.y);
             
-            // Calcul d'une "Bounding Box" (Boîte de collision) très basique
-            let is_clicked = world_position.x >= pos.x - size && world_position.x <= pos.x + size &&
-                             world_position.y >= pos.y - size && world_position.y <= pos.y + size;
-                             
-            if is_clicked {
-                if selected.is_none() {
-                    commands.entity(entity).insert(Selected); // On attache le composant !
-                    println!("Unité sélectionnée !");
-                }
-            } else {
-                // Si on a cliqué ailleurs, on désélectionne
+            // Si la boîte est très petite, on considère que c'est un simple clic
+            let is_click = (max_x - min_x) < 5.0 && (max_y - min_y) < 5.0;
+
+            // Règle classique de RTS : on désélectionne tout d'abord (à moins d'utiliser Shift par exemple, on l'ajoutera plus tard si besoin)
+            for (entity, _, _, selected) in q_units.iter() {
                 if selected.is_some() {
-                    commands.entity(entity).remove::<Selected>(); // On retire le composant
+                    commands.entity(entity).remove::<Selected>();
                 }
             }
+
+            // On sélectionne les unités qui se trouvent dans la zone
+            for (entity, transform, collider, _) in q_units.iter() {
+                let pos = transform.translation.truncate();
+                let size = collider.0;
+                
+                if is_click {
+                    // Logique de clic simple : L'unité est-elle sous la souris ?
+                    let is_clicked = world_pos.x >= pos.x - size && world_pos.x <= pos.x + size &&
+                                     world_pos.y >= pos.y - size && world_pos.y <= pos.y + size;
+                    if is_clicked {
+                        commands.entity(entity).insert(Selected);
+                    }
+                } else {
+                    // Logique drag box : Le centre de l'unité est-il dans le rectangle ?
+                    let in_box = pos.x >= min_x && pos.x <= max_x &&
+                                 pos.y >= min_y && pos.y <= max_y;
+                    if in_box {
+                        commands.entity(entity).insert(Selected);
+                    }
+                }
+            }
+        }
+        
+        // On réinitialise notre boîte
+        selection_state.start_pos = None;
+        selection_state.end_pos = None;
+    }
+}
+
+// Dessine un rectangle vert pour visualiser la boîte de sélection en cours
+fn draw_selection_box(
+    mut gizmos: Gizmos,
+    selection_state: Res<SelectionState>,
+) {
+    if let (Some(start), Some(end)) = (selection_state.start_pos, selection_state.end_pos) {
+        let size = (end - start).abs();
+        // Ne dessine que si on a "glissé" un minimum
+        if size.x > 5.0 || size.y > 5.0 {
+            let center = (start + end) / 2.0;
+            gizmos.rect_2d(center, size, Color::srgb(0.0, 1.0, 0.0));
         }
     }
 }
