@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use crate::units::components::*;
 use crate::combat::components::{Health, Damage, AttackTimer, Team, MeleeRange};
+use crate::economy::components::{Worker, WorkerState, MineTimer};
 
 pub fn setup_units(
     mut commands: Commands,
@@ -12,7 +13,7 @@ pub fn setup_units(
         Mesh2d(meshes.add(Rectangle::new(40.0, 40.0))),
         MeshMaterial2d(materials.add(Color::srgb(1.0, 0.0, 0.0))),
         Transform::from_xyz(-100.0, 0.0, 0.0),
-        UnitType::TypeA,
+        UnitType::MeleeA,
         Speed(150.0),
         SelectionCollider(20.0),
         PhysicalCollider(18.0),
@@ -28,7 +29,7 @@ pub fn setup_units(
         Mesh2d(meshes.add(Circle::new(20.0))),
         MeshMaterial2d(materials.add(Color::srgb(0.0, 1.0, 0.0))),
         Transform::from_xyz(0.0, 0.0, 0.0),
-        UnitType::TypeB,
+        UnitType::MeleeB,
         Speed(150.0),
         SelectionCollider(20.0),
         PhysicalCollider(18.0),
@@ -48,7 +49,7 @@ pub fn setup_units(
         ))),
         MeshMaterial2d(materials.add(Color::srgb(0.0, 0.0, 1.0))),
         Transform::from_xyz(100.0, 0.0, 0.0),
-        UnitType::TypeC,
+        UnitType::MeleeC,
         Speed(150.0),
         SelectionCollider(20.0),
         PhysicalCollider(18.0),
@@ -59,6 +60,24 @@ pub fn setup_units(
         MeleeRange(45.0),
     ));
 
+    // ---- Worker (Allié) ----
+    commands.spawn((
+        UnitType::Worker,
+        Mesh2d(meshes.add(Circle::new(10.0))), // Petit cercle
+        MeshMaterial2d(materials.add(Color::srgb(1.0, 1.0, 1.0))), // Blanc
+        Transform::from_xyz(0.0, -150.0, 0.0),
+        Speed(140.0), // Plus rapide que la normale
+        SelectionCollider(15.0),
+        PhysicalCollider(10.0),
+        Team(1),
+        Health(50.0),
+        Damage(0.0),
+        MeleeRange(0.0),
+        AttackTimer(Timer::from_seconds(999.0, TimerMode::Once)), // N'attaque pas
+        Worker { capacity: 10.0, current_load: 0.0 },
+        WorkerState::Idle,
+    )).insert(MineTimer(Timer::from_seconds(0.5, TimerMode::Once))); // Vitesse de minage
+
     // --- ENNEMIS (Team 2) ---
     commands.spawn((
         Mesh2d(meshes.add(Triangle2d::new(
@@ -68,7 +87,7 @@ pub fn setup_units(
         ))),
         MeshMaterial2d(materials.add(Color::srgb(0.2, 0.2, 0.2))),
         Transform::from_xyz(250.0, 0.0, 0.0),
-        UnitType::TypeC,
+        UnitType::MeleeC,
         Speed(150.0),
         SelectionCollider(20.0),
         PhysicalCollider(18.0),

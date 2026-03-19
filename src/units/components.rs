@@ -1,7 +1,12 @@
 use bevy::prelude::*;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
-pub enum UnitType { TypeA, TypeB, TypeC }
+pub enum UnitType {
+    MeleeA,
+    MeleeB,
+    MeleeC,
+    Worker,
+}
 
 #[derive(Component)]
 pub struct Selected;

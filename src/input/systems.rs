@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::input::resources::SelectionState;
-use crate::units::components::{Selected, TargetPosition, SelectionCollider};
+use crate::units::components::{Selected, SelectionCollider};
 
 pub fn handle_selection_input(
     mut commands: Commands,
@@ -93,9 +93,10 @@ pub fn handle_movement_orders(
     mut commands: Commands,
     buttons: Res<ButtonInput<MouseButton>>,
     window: Single<&Window>,
-    // On sécurise également ici
     camera_query: Single<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
-    q_selected_units: Query<Entity, With<Selected>>, 
+    q_selected_units: Query<Entity, With<crate::units::components::Selected>>,
+    q_resources: Query<(Entity, &Transform, &crate::units::components::PhysicalCollider), With<crate::economy::components::ResourceNode>>,
+    mut q_worker_states: Query<&mut crate::economy::components::WorkerState>,
 ) {
     if buttons.just_pressed(MouseButton::Right) {
         let Some(cursor_position) = window.cursor_position() else { return; };
@@ -109,8 +110,36 @@ pub fn handle_movement_orders(
         let (camera, camera_transform) = *camera_query;
         let Ok(world_position) = camera.viewport_to_world_2d(camera_transform, cursor_position) else { return; };
 
+        // Vérification du clic sur une ressource
+        let mut clicked_resource = None;
+        for (res_entity, res_transform, res_collider) in q_resources.iter() {
+            let pos = res_transform.translation.truncate();
+            if pos.distance(world_position) <= res_collider.0 {
+                clicked_resource = Some(res_entity);
+                break;
+            }
+        }
+
         for entity in q_selected_units.iter() {
-            commands.entity(entity).insert(TargetPosition(world_position));
+            if let Some(res_entity) = clicked_resource {
+                // S'il s'agit d'un ouvrier, on lance l'ordre de minage
+                if let Ok(mut state) = q_worker_states.get_mut(entity) {
+                    *state = crate::economy::components::WorkerState::MovingToResource(res_entity);
+                    // On supprime un éventuel mouvement de déplacement pour qu'il s'arrête et lance son IA minage
+                    commands.entity(entity).remove::<crate::units::components::TargetPosition>();
+                } else {
+                    // Les unités de combat vont juste se déplacer à côté
+                    commands.entity(entity).insert(crate::units::components::TargetPosition(world_position));
+                }
+            } else {
+                // Clic sur le sol classique ou sur l'ennemi
+                commands.entity(entity).insert(crate::units::components::TargetPosition(world_position));
+                
+                // Si c'est un ouvrier, on annule son travail en cours pour obéir à l'ordre direct
+                if let Ok(mut state) = q_worker_states.get_mut(entity) {
+                    *state = crate::economy::components::WorkerState::Idle;
+                }
+            }
         }
     }
 }

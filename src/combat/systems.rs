@@ -42,12 +42,12 @@ pub fn apply_damage(
         let Ok(att_type) = attackers.get(event.attacker) else { continue; };
 
         let multiplier = match (att_type, def_type) {
-            (UnitType::TypeA, UnitType::TypeB) => 2.0,
-            (UnitType::TypeB, UnitType::TypeC) => 2.0,
-            (UnitType::TypeC, UnitType::TypeA) => 2.0,
-            (UnitType::TypeA, UnitType::TypeC) => 0.5,
-            (UnitType::TypeC, UnitType::TypeB) => 0.5,
-            (UnitType::TypeB, UnitType::TypeA) => 0.5,
+            (UnitType::MeleeA, UnitType::MeleeB) => 2.0,
+            (UnitType::MeleeB, UnitType::MeleeC) => 2.0,
+            (UnitType::MeleeC, UnitType::MeleeA) => 2.0,
+            (UnitType::MeleeA, UnitType::MeleeC) => 0.5,
+            (UnitType::MeleeC, UnitType::MeleeB) => 0.5,
+            (UnitType::MeleeB, UnitType::MeleeA) => 0.5,
             _ => 1.0,
         };
 

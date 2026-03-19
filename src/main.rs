@@ -4,6 +4,7 @@ mod units;
 mod input;
 mod combat;
 mod minimap;
+mod economy;
 
 // Marqueur pour distinguer la caméra principale du jeu de celle de la minimap
 #[derive(Component)]
@@ -21,6 +22,7 @@ fn main() {
         .add_plugins(input::InputPlugin)
         .add_plugins(combat::CombatPlugin)
         .add_plugins(minimap::MinimapPlugin)
+        .add_plugins(economy::EconomyPlugin)
 
         .add_systems(Startup, setup_camera)
         
