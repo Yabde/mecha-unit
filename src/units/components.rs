@@ -8,6 +8,22 @@ pub enum UnitType {
     Worker,
 }
 
+impl UnitType {
+    pub fn cost(&self) -> u32 {
+        match self {
+            UnitType::Worker => 50,
+            UnitType::MeleeA | UnitType::MeleeB | UnitType::MeleeC => 100,
+        }
+    }
+
+    pub fn build_time(&self) -> f32 {
+        match self {
+            UnitType::Worker => 2.0,
+            UnitType::MeleeA | UnitType::MeleeB | UnitType::MeleeC => 4.0,
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct Selected;
 

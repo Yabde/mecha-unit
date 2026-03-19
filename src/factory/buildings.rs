@@ -48,6 +48,7 @@ pub fn spawn_construction(
     };
 
     let mut entity = commands.spawn((
+        building_type, // <--- L'oubli était ici ! On attache l'enum comme composant !
         Mesh2d(mesh),
         MeshMaterial2d(materials.add(color)),
         Transform::from_xyz(position.x, position.y, 0.0),
@@ -59,6 +60,11 @@ pub fn spawn_construction(
 
     if building_type == BuildingType::Turret {
         entity.insert(Damage(15.0));
+    } else if building_type == BuildingType::Barracks {
+        entity.insert(crate::building::components::ProductionQueue {
+            queue: Vec::new(),
+            timer: Timer::from_seconds(0.0, TimerMode::Once),
+        });
     }
 
     entity.id()

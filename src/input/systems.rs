@@ -11,8 +11,12 @@ pub fn handle_selection_input(
     mut selection_state: ResMut<SelectionState>,
     q_units: Query<(Entity, &Transform, &SelectionCollider, Option<&Selected>)>, 
     placement_state: Res<crate::building::resources::PlacementState>,
+    q_interactions: Query<&Interaction, With<Node>>,
 ) {
     if placement_state.active_building.is_some() { return; }
+    for interaction in q_interactions.iter() {
+        if *interaction != Interaction::None { return; }
+    }
     
     let Some(cursor_position) = window.cursor_position() else { return; };
     let (camera, camera_transform) = *camera_query;
@@ -101,8 +105,12 @@ pub fn handle_movement_orders(
     q_resources: Query<(Entity, &Transform, &crate::units::components::PhysicalCollider), With<crate::economy::components::ResourceNode>>,
     mut q_worker_states: Query<&mut crate::economy::components::WorkerState>,
     placement_state: Res<crate::building::resources::PlacementState>,
+    q_interactions: Query<&Interaction, With<Node>>,
 ) {
     if placement_state.active_building.is_some() { return; }
+    for interaction in q_interactions.iter() {
+        if *interaction != Interaction::None { return; }
+    }
 
     if buttons.just_pressed(MouseButton::Right) {
         let Some(cursor_position) = window.cursor_position() else { return; };

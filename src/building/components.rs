@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::units::components::UnitType;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BuildingType {
@@ -17,3 +18,9 @@ impl BuildingType {
 
 #[derive(Component)]
 pub struct GhostBuilding;
+
+#[derive(Component)]
+pub struct ProductionQueue {
+    pub queue: Vec<UnitType>,
+    pub timer: Timer,
+}
