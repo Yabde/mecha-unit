@@ -16,7 +16,7 @@ pub fn spawn_worker(
         UnitType::Worker,
         Mesh2d(meshes.add(Circle::new(10.0))),
         MeshMaterial2d(materials.add(color)),
-        Transform::from_xyz(position.x, position.y, 0.0),
+        Transform::from_xyz(position.x, position.y, 1.0),
         Speed(140.0),
         SelectionCollider(15.0),
         PhysicalCollider(10.0),
@@ -27,7 +27,15 @@ pub fn spawn_worker(
         AttackTimer(Timer::from_seconds(999.0, TimerMode::Once)),
         Worker { capacity: 10.0, current_load: 0.0 },
         WorkerState::Idle,
-    )).insert(MineTimer(Timer::from_seconds(0.5, TimerMode::Repeating))).id()
+    ))
+    .with_children(|parent| {
+        parent.spawn((
+            Mesh2d(meshes.add(Circle::new(12.0))), // +2 pixels for black border
+            MeshMaterial2d(materials.add(Color::BLACK)),
+            Transform::from_xyz(0.0, 0.0, -0.1), // Draw slightly behind
+        ));
+    })
+    .insert(MineTimer(Timer::from_seconds(0.5, TimerMode::Repeating))).id()
 }
 
 pub fn spawn_melee(
@@ -56,11 +64,17 @@ pub fn spawn_melee(
         ),
     };
 
+    let border_mesh = match unit_type {
+        UnitType::MeleeA => meshes.add(Rectangle::new(44.0, 44.0)),
+        UnitType::MeleeB => meshes.add(Circle::new(22.0)),
+        UnitType::MeleeC | _ => meshes.add(Triangle2d::new(Vec2::new(0.0, 22.0), Vec2::new(-22.0, -22.0), Vec2::new(22.0, -22.0))),
+    };
+
     commands.spawn((
         unit_type,
         Mesh2d(mesh),
         MeshMaterial2d(materials.add(color)),
-        Transform::from_xyz(position.x, position.y, 0.0),
+        Transform::from_xyz(position.x, position.y, 1.0),
         Speed(speed),
         SelectionCollider(20.0),
         PhysicalCollider(18.0),
@@ -69,5 +83,12 @@ pub fn spawn_melee(
         Damage(damage),
         MeleeRange(45.0),
         AttackTimer(Timer::from_seconds(1.0, TimerMode::Once)),
-    )).id()
+    ))
+    .with_children(|parent| {
+        parent.spawn((
+            Mesh2d(border_mesh),
+            MeshMaterial2d(materials.add(Color::BLACK)),
+            Transform::from_xyz(0.0, 0.0, -0.1),
+        ));
+    }).id()
 }

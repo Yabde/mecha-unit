@@ -39,3 +39,30 @@ pub fn process_production_queues(
         }
     }
 }
+
+pub fn draw_production_progress(
+    q_buildings: Query<(&ProductionQueue, &Transform)>,
+    mut gizmos: Gizmos,
+) {
+    for (production, transform) in q_buildings.iter() {
+        if production.queue.is_empty() {
+            continue; // Rien à afficher si aucune production
+        }
+
+        let ratio = production.timer.elapsed_secs() / production.timer.duration().as_secs_f32();
+        
+        let pos = transform.translation.truncate() + Vec2::new(0.0, 45.0); // 45px au dessus du centre
+        let bar_width = 40.0;
+        let bar_height = 6.0;
+
+        // Fond Noir/Gris
+        let half_size = Vec2::new(bar_width, bar_height) / 2.0;
+        gizmos.rect_2d(pos, half_size, Color::srgba(0.1, 0.1, 0.1, 0.8));
+
+        // Remplissage Vert 
+        let fill_width = bar_width * ratio;
+        let fill_pos = pos - Vec2::new((bar_width - fill_width) / 2.0, 0.0);
+        let half_fill_size = Vec2::new(fill_width, bar_height) / 2.0;
+        gizmos.rect_2d(fill_pos, half_fill_size, Color::srgb(0.0, 0.8, 0.0));
+    }
+}
