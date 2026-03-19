@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use crate::economy::components::*;
 use crate::economy::resources::*;
-use crate::units::components::{PhysicalCollider, SelectionCollider, Speed};
-use crate::combat::components::{Team, Health};
+use crate::units::components::Speed;
 
 // 1. Spawner la base et les filons
 pub fn spawn_economy_entities(
@@ -11,27 +10,12 @@ pub fn spawn_economy_entities(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     // ---- BASE (Team 1) ----
-    commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(80.0, 80.0))),
-        MeshMaterial2d(materials.add(Color::srgb(0.0, 0.5, 0.8))), // Bleu Base
-        Transform::from_xyz(-200.0, -100.0, 0.0),
-        Base { team: 1 },
-        PhysicalCollider(40.0),
-        SelectionCollider(45.0),
-        Team(1),
-        Health(500.0),
-    ));
+    crate::factory::buildings::spawn_base(&mut commands, &mut meshes, &mut materials, Vec2::new(-200.0, -100.0), 1);
 
     // ---- CRISTAUX (Map) ----
     for i in 0..4 {
-        commands.spawn((
-            Mesh2d(meshes.add(RegularPolygon::new(15.0, 6))), // Hexagone
-            MeshMaterial2d(materials.add(Color::srgb(1.0, 0.8, 0.0))), // Doré/Jaune
-            Transform::from_xyz(150.0 + (i as f32 * 50.0), 150.0 - (i as f32 * 30.0), 0.0),
-            ResourceNode { amount: 200.0 }, // Chaque filon a 200 minéraux
-            PhysicalCollider(15.0),
-            SelectionCollider(20.0),
-        ));
+        let pos = Vec2::new(150.0 + (i as f32 * 50.0), 150.0 - (i as f32 * 30.0));
+        crate::factory::resources::spawn_crystal(&mut commands, &mut meshes, &mut materials, pos, 200.0);
     }
 }
 

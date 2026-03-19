@@ -10,7 +10,10 @@ pub fn handle_selection_input(
     camera_query: Single<(&Camera, &GlobalTransform), With<crate::MainCamera>>,
     mut selection_state: ResMut<SelectionState>,
     q_units: Query<(Entity, &Transform, &SelectionCollider, Option<&Selected>)>, 
+    placement_state: Res<crate::building::resources::PlacementState>,
 ) {
+    if placement_state.active_building.is_some() { return; }
+    
     let Some(cursor_position) = window.cursor_position() else { return; };
     let (camera, camera_transform) = *camera_query;
     let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_position) else { return; };
@@ -97,7 +100,10 @@ pub fn handle_movement_orders(
     q_selected_units: Query<Entity, With<crate::units::components::Selected>>,
     q_resources: Query<(Entity, &Transform, &crate::units::components::PhysicalCollider), With<crate::economy::components::ResourceNode>>,
     mut q_worker_states: Query<&mut crate::economy::components::WorkerState>,
+    placement_state: Res<crate::building::resources::PlacementState>,
 ) {
+    if placement_state.active_building.is_some() { return; }
+
     if buttons.just_pressed(MouseButton::Right) {
         let Some(cursor_position) = window.cursor_position() else { return; };
         

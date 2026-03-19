@@ -1,102 +1,21 @@
 use bevy::prelude::*;
 use crate::units::components::*;
-use crate::combat::components::{Health, Damage, AttackTimer, Team, MeleeRange};
-use crate::economy::components::{Worker, WorkerState, MineTimer};
+
+use crate::factory::units::{spawn_melee, spawn_worker};
 
 pub fn setup_units(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    // Type A : Carré (Rouge)
-    commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(40.0, 40.0))),
-        MeshMaterial2d(materials.add(Color::srgb(1.0, 0.0, 0.0))),
-        Transform::from_xyz(-100.0, 0.0, 0.0),
-        UnitType::MeleeA,
-        Speed(150.0),
-        SelectionCollider(20.0),
-        PhysicalCollider(18.0),
-        Health(50.0),
-        Damage(10.0),
-        AttackTimer(Timer::from_seconds(1.0, TimerMode::Once)),
-        Team(1),
-        MeleeRange(45.0),
-    ));
+    // Team 1 (Allies)
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeA, Vec2::new(-100.0, 0.0), 1);
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeB, Vec2::new(0.0, 0.0), 1);
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeC, Vec2::new(100.0, 0.0), 1);
+    spawn_worker(&mut commands, &mut meshes, &mut materials, Vec2::new(0.0, -150.0), 1);
 
-    // Type B : Cercle (Vert)
-    commands.spawn((
-        Mesh2d(meshes.add(Circle::new(20.0))),
-        MeshMaterial2d(materials.add(Color::srgb(0.0, 1.0, 0.0))),
-        Transform::from_xyz(0.0, 0.0, 0.0),
-        UnitType::MeleeB,
-        Speed(150.0),
-        SelectionCollider(20.0),
-        PhysicalCollider(18.0),
-        Health(50.0),
-        Damage(10.0),
-        AttackTimer(Timer::from_seconds(1.0, TimerMode::Once)),
-        Team(1),
-        MeleeRange(45.0),
-    ));
-
-    // Type C : Triangle (Bleu)
-    commands.spawn((
-        Mesh2d(meshes.add(Triangle2d::new(
-            Vec2::new(0.0, 20.0),
-            Vec2::new(-20.0, -20.0),
-            Vec2::new(20.0, -20.0),
-        ))),
-        MeshMaterial2d(materials.add(Color::srgb(0.0, 0.0, 1.0))),
-        Transform::from_xyz(100.0, 0.0, 0.0),
-        UnitType::MeleeC,
-        Speed(150.0),
-        SelectionCollider(20.0),
-        PhysicalCollider(18.0),
-        Health(50.0),
-        Damage(10.0),
-        AttackTimer(Timer::from_seconds(1.0, TimerMode::Once)),
-        Team(1),
-        MeleeRange(45.0),
-    ));
-
-    // ---- Worker (Allié) ----
-    commands.spawn((
-        UnitType::Worker,
-        Mesh2d(meshes.add(Circle::new(10.0))), // Petit cercle
-        MeshMaterial2d(materials.add(Color::srgb(1.0, 1.0, 1.0))), // Blanc
-        Transform::from_xyz(0.0, -150.0, 0.0),
-        Speed(140.0), // Plus rapide que la normale
-        SelectionCollider(15.0),
-        PhysicalCollider(10.0),
-        Team(1),
-        Health(50.0),
-        Damage(0.0),
-        MeleeRange(0.0),
-        AttackTimer(Timer::from_seconds(999.0, TimerMode::Once)), // N'attaque pas
-        Worker { capacity: 10.0, current_load: 0.0 },
-        WorkerState::Idle,
-    )).insert(MineTimer(Timer::from_seconds(0.5, TimerMode::Repeating))); // Vitesse de minage
-
-    // --- ENNEMIS (Team 2) ---
-    commands.spawn((
-        Mesh2d(meshes.add(Triangle2d::new(
-            Vec2::new(0.0, 20.0),
-            Vec2::new(-20.0, -20.0),
-            Vec2::new(20.0, -20.0),
-        ))),
-        MeshMaterial2d(materials.add(Color::srgb(0.2, 0.2, 0.2))),
-        Transform::from_xyz(250.0, 0.0, 0.0),
-        UnitType::MeleeC,
-        Speed(150.0),
-        SelectionCollider(20.0),
-        PhysicalCollider(18.0),
-        Health(100.0),
-        Damage(10.0),
-        AttackTimer(Timer::from_seconds(1.0, TimerMode::Once)),
-        Team(2),
-        MeleeRange(45.0),
-    ));
+    // Team 2 (Ennemis)
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeC, Vec2::new(250.0, 0.0), 2);
 }
 
 pub fn animate_selection(mut query: Query<(&mut Transform, Option<&Selected>)>) {
