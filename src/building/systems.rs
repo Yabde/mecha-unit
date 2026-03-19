@@ -14,17 +14,24 @@ pub fn handle_placement(
     mut q_ghost: Query<(Entity, &mut Transform), With<GhostBuilding>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    q_interactions: Query<&Interaction, With<Node>>, // NEW: Détecteur d'UI
 ) {
     let active_building = match placement_state.active_building {
         Some(b) => b,
         None => {
-            // S'il n'y a pas de construction active, on détruit le fantôme
             for (entity, _) in q_ghost.iter() {
                 commands.entity(entity).despawn();
             }
             return;
         }
     };
+
+    // Empêche l'action si la souris survole N'IMPORTE QUEL élément UI (comme les boutons ou le menu de construction !)
+    for interaction in q_interactions.iter() {
+        if *interaction != Interaction::None {
+            return;
+        }
+    }
 
     let Some(cursor_position) = window.cursor_position() else { return; };
     

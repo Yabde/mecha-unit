@@ -24,6 +24,7 @@ pub fn setup_build_menu(mut commands: Commands) {
             ..default()
         },
         BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.8)),
+        Interaction::None, // Permet de bloquer les clics qui passent à travers le panneau UI vide
         BuildMenuUI,
     )).id();
 
