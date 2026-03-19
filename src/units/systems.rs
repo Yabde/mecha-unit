@@ -76,7 +76,7 @@ pub fn setup_units(
         AttackTimer(Timer::from_seconds(999.0, TimerMode::Once)), // N'attaque pas
         Worker { capacity: 10.0, current_load: 0.0 },
         WorkerState::Idle,
-    )).insert(MineTimer(Timer::from_seconds(0.5, TimerMode::Once))); // Vitesse de minage
+    )).insert(MineTimer(Timer::from_seconds(0.5, TimerMode::Repeating))); // Vitesse de minage
 
     // --- ENNEMIS (Team 2) ---
     commands.spawn((
@@ -137,11 +137,11 @@ pub fn move_units(
 }
 
 pub fn handle_separation(
-    mut query: Query<(&mut Transform, &PhysicalCollider)>,
+    mut query: Query<(&mut Transform, &PhysicalCollider, Option<&Speed>)>,
     time: Res<Time>,
 ) {
     let mut combinations = query.iter_combinations_mut();
-    while let Some([(mut transform_a, collider_a), (mut transform_b, collider_b)]) = combinations.fetch_next() {
+    while let Some([(mut transform_a, collider_a, speed_a), (mut transform_b, collider_b, speed_b)]) = combinations.fetch_next() {
         let pos_a = transform_a.translation.truncate();
         let pos_b = transform_b.translation.truncate();
         
@@ -158,8 +158,17 @@ pub fn handle_separation(
             let direction = diff.normalize();
             let push_force = direction * overlap * 15.0 * time.delta_secs();
 
-            transform_a.translation += push_force.extend(0.0);
-            transform_b.translation -= push_force.extend(0.0);
+            if speed_a.is_some() && speed_b.is_some() {
+                // Les deux sont mobiles (Unités), on les écarte mutuellement
+                transform_a.translation += push_force.extend(0.0);
+                transform_b.translation -= push_force.extend(0.0);
+            } else if speed_a.is_some() {
+                // Seul A est mobile, il "glisse" le long de B (Bâtiment)
+                transform_a.translation += (push_force * 2.0).extend(0.0);
+            } else if speed_b.is_some() {
+                // Seul B est mobile
+                transform_b.translation -= (push_force * 2.0).extend(0.0);
+            }
         }
     }
 }
