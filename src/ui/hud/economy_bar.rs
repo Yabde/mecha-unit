@@ -1,15 +1,13 @@
 use bevy::prelude::*;
 use crate::economy::resources::PlayerEconomy;
-use crate::ui::components::EconomyText;
+use crate::ui::theme;
+use super::components::EconomyText;
 
-pub fn setup_ui(mut commands: Commands) {
-    // HUD HUD principal
-    
-    // Le texte des cristaux
+pub fn setup_economy_bar(mut commands: Commands) {
     commands.spawn((
         Text::new("Cristaux: 0"),
         TextFont {
-            font_size: 24.0,
+            font_size: theme::TEXT_SIZE_HUD,
             ..default()
         },
         TextColor(Color::WHITE),
@@ -23,7 +21,7 @@ pub fn setup_ui(mut commands: Commands) {
     ));
 }
 
-pub fn update_economy_ui(
+pub fn update_economy_bar(
     economy: Res<PlayerEconomy>,
     mut q_text: Query<&mut Text, With<EconomyText>>,
 ) {

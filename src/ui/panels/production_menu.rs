@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use crate::building::components::{BuildingType, ProductionQueue};
 use crate::units::components::{UnitType, Selected};
 use crate::economy::resources::PlayerEconomy;
+use crate::ui::theme;
+use crate::ui::widgets::button::spawn_action_button;
 
 #[derive(Component)]
 pub struct ProductionMenuUI;
@@ -14,44 +16,21 @@ pub fn setup_production_menu(mut commands: Commands) {
         Node {
             position_type: PositionType::Absolute,
             bottom: Val::Px(15.0),
-            right: Val::Px(350.0), // À gauche de la minimap
+            right: Val::Px(350.0),
             display: Display::None,
             flex_direction: FlexDirection::Row,
-            row_gap: Val::Px(10.0),
-            column_gap: Val::Px(10.0),
-            padding: UiRect::all(Val::Px(10.0)),
+            row_gap: theme::PANEL_GAP,
+            column_gap: theme::PANEL_GAP,
+            padding: UiRect::all(theme::PANEL_PADDING),
             ..default()
         },
-        BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.8)),
-        Interaction::None, // Bloque les clics pour la carte
+        BackgroundColor(theme::PANEL_BG),
+        Interaction::None,
         ProductionMenuUI,
     )).id();
 
-    let mut spawn_btn = |text: &str, unit: UnitType| {
-        let btn = commands.spawn((
-            Button,
-            Node {
-                padding: UiRect::all(Val::Px(10.0)),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                border: UiRect::all(Val::Px(2.0)),
-                ..default()
-            },
-            BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
-            ProductionButton(unit),
-        )).with_children(|parent| {
-            parent.spawn((
-                Text::new(text),
-                TextFont { font_size: 16.0, ..default() },
-                TextColor(Color::WHITE),
-            ));
-        }).id();
-        commands.entity(parent).add_child(btn);
-    };
-
-    spawn_btn("Worker (50)", UnitType::Worker);
-    spawn_btn("Guerrier (100)", UnitType::MeleeA);
-    // On pourrait rajouter MeleeB etc.
+    spawn_action_button(&mut commands, parent, "Worker (50)", ProductionButton(UnitType::Worker));
+    spawn_action_button(&mut commands, parent, "Guerrier (100)", ProductionButton(UnitType::MeleeA));
 }
 
 pub fn update_production_menu_visibility(
@@ -86,16 +65,14 @@ pub fn handle_production_button_clicks(
     for (interaction, button, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Pressed => {
-                color.0 = Color::srgb(0.0, 0.0, 0.5); // Bleu de validation
+                color.0 = theme::BUTTON_PRESSED_TRAIN;
 
                 let unit = button.0;
                 if economy.crystals >= unit.cost() {
-                    // On attribue l'ordre à la première caserne sélectionnée
                     for mut queue in q_selected_barracks.iter_mut() {
                         economy.crystals -= unit.cost();
                         queue.queue.push(unit);
                         if queue.queue.len() == 1 {
-                            // On démarre le timer pour la toute première unité
                             queue.timer = Timer::from_seconds(unit.build_time(), TimerMode::Once);
                         }
                         break;
@@ -103,10 +80,10 @@ pub fn handle_production_button_clicks(
                 }
             }
             Interaction::Hovered => {
-                color.0 = Color::srgb(0.4, 0.4, 0.4);
+                color.0 = theme::BUTTON_HOVER;
             }
             Interaction::None => {
-                color.0 = Color::srgb(0.2, 0.2, 0.2);
+                color.0 = theme::BUTTON_BG;
             }
         }
     }
