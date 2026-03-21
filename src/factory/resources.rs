@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::economy::components::ResourceNode;
-use crate::units::components::{PhysicalCollider, SelectionCollider};
+use crate::core::components::{PhysicalCollider, SelectionCollider};
 
 pub fn spawn_crystal(
     commands: &mut Commands,

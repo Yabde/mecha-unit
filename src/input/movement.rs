@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::input::helpers::{is_over_minimap, is_ui_blocking};
-use crate::units::components::{Selected, TargetPosition, PhysicalCollider};
+use crate::core::components::{Selected, TargetPosition, PhysicalCollider};
 use crate::economy::components::{ResourceNode, WorkerState};
 use crate::building::resources::PlacementState;
 

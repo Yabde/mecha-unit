@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use crate::building::components::BuildingType;
 use crate::building::resources::PlacementState;
 use crate::economy::components::Worker;
-use crate::units::components::Selected;
+use crate::core::components::Selected;
 use crate::ui::theme;
 use crate::ui::widgets::button::spawn_action_button;
 

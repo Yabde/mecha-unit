@@ -1,5 +1,8 @@
 use bevy::prelude::*;
 
+// Re-export des composants partagés pour compatibilité
+pub use crate::core::components::*;
+
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UnitType {
     MeleeA,
@@ -23,18 +26,3 @@ impl UnitType {
         }
     }
 }
-
-#[derive(Component)]
-pub struct Selected;
-
-#[derive(Component)]
-pub struct Speed(pub f32);
-
-#[derive(Component)]
-pub struct TargetPosition(pub Vec2);
-
-#[derive(Component)]
-pub struct SelectionCollider(pub f32);
-
-#[derive(Component)]
-pub struct PhysicalCollider(pub f32);

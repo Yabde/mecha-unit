@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use crate::building::components::{BuildingType, ProductionQueue};
-use crate::units::components::{UnitType, Selected};
+use crate::units::components::UnitType;
+use crate::core::components::Selected;
 use crate::economy::resources::PlayerEconomy;
 use crate::ui::theme;
 use crate::ui::widgets::button::spawn_action_button;

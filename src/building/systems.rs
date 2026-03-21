@@ -15,7 +15,7 @@ pub fn handle_placement(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     q_interactions: Query<&Interaction, With<Node>>, // NEW: Détecteur d'UI
-    q_colliders: Query<(&Transform, &crate::units::components::PhysicalCollider), Without<GhostBuilding>>, // Collision Check
+    q_colliders: Query<(&Transform, &crate::core::components::PhysicalCollider), Without<GhostBuilding>>, // Collision Check
 ) {
     let active_building = match placement_state.active_building {
         Some(b) => b,

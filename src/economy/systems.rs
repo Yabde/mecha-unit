@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::economy::components::*;
 use crate::economy::resources::*;
-use crate::units::components::Speed;
+use crate::core::components::Speed;
 
 // 1. Spawner la base et les filons
 pub fn spawn_economy_entities(

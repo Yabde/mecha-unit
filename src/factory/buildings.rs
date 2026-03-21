@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::economy::components::Base;
-use crate::units::components::{SelectionCollider, PhysicalCollider};
+use crate::core::components::{SelectionCollider, PhysicalCollider};
 use crate::combat::components::{Team, Health};
 
 pub fn spawn_base(

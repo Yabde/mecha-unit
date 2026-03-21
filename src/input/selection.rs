@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::input::resources::SelectionState;
 use crate::input::helpers::{is_over_minimap, is_ui_blocking};
-use crate::units::components::{Selected, SelectionCollider};
+use crate::core::components::{Selected, SelectionCollider};
 use crate::building::resources::PlacementState;
 
 pub fn handle_selection_input(
