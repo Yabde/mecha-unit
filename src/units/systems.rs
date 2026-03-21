@@ -15,6 +15,8 @@ pub fn setup_units(
     spawn_worker(&mut commands, &mut meshes, &mut materials, Vec2::new(0.0, -150.0), 1);
 
     // Team 2 (Ennemis)
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeA, Vec2::new(250.0, 0.0), 2);
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeB, Vec2::new(250.0, 0.0), 2);
     spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeC, Vec2::new(250.0, 0.0), 2);
 }
 

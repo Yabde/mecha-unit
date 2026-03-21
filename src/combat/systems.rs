@@ -33,12 +33,13 @@ pub fn detect_combat(
 
 // 2. Traitement de l'attaque et calcul Pierre-Feuilles-Ciseaux
 pub fn apply_damage(
+    mut commands: Commands,
     mut events: MessageReader<AttackEvent>,
-    mut defenders: Query<(&mut Health, &UnitType)>,
+    mut defenders: Query<(&mut Health, &UnitType, &Transform)>,
     attackers: Query<&UnitType>,
 ) {
     for event in events.read() {
-        let Ok((mut health, def_type)) = defenders.get_mut(event.defender) else { continue; };
+        let Ok((mut health, def_type, def_transform)) = defenders.get_mut(event.defender) else { continue; };
         let Ok(att_type) = attackers.get(event.attacker) else { continue; };
 
         let multiplier = match (att_type, def_type) {
@@ -53,11 +54,54 @@ pub fn apply_damage(
 
         let final_damage = event.base_damage * multiplier;
         health.0 -= final_damage;
-        println!("Frappe ! {:?} inflige {} dégâts à {:?} (Il reste {} PV)", att_type, final_damage, def_type, health.0);
+
+        // Spawn du popup de dégâts flottant
+        let popup_color = if multiplier > 1.0 {
+            Color::srgb(1.0, 0.3, 0.0)  // Orange = coup critique (x2)
+        } else if multiplier < 1.0 {
+            Color::srgb(0.6, 0.6, 0.6)  // Gris = résistance (x0.5)
+        } else {
+            Color::srgb(1.0, 1.0, 0.0)  // Jaune = dégâts normaux
+        };
+
+        let pos = def_transform.translation;
+        commands.spawn((
+            Text2d::new(format!("-{}", final_damage as i32)),
+            TextFont { font_size: 18.0, ..default() },
+            TextColor(popup_color),
+            Transform::from_xyz(pos.x, pos.y + 20.0, 10.0), // Au-dessus de la cible
+            DamagePopup {
+                lifetime: Timer::from_seconds(0.8, TimerMode::Once),
+            },
+        ));
     }
 }
 
-// 3. Mort : Despawn des entités dont la vie est à 0 ou moins
+// 3. Animation des popups : flottent vers le haut et disparaissent
+pub fn animate_damage_popups(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Transform, &mut TextColor, &mut DamagePopup)>,
+) {
+    for (entity, mut transform, mut color, mut popup) in query.iter_mut() {
+        popup.lifetime.tick(time.delta());
+
+        // Flotte vers le haut
+        transform.translation.y += 40.0 * time.delta_secs();
+
+        // Fade out progressif
+        let remaining = 1.0 - popup.lifetime.fraction();
+        let c = color.0.to_srgba();
+        color.0 = Color::srgba(c.red, c.green, c.blue, remaining);
+
+        // Despawn quand le temps est écoulé
+        if popup.lifetime.just_finished() {
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
+// 4. Mort : Despawn des entités dont la vie est à 0 ou moins
 pub fn handle_death(
     mut commands: Commands,
     query: Query<(Entity, &Health)>,
@@ -65,7 +109,6 @@ pub fn handle_death(
     for (entity, health) in query.iter() {
         if health.0 <= 0.0 {
             commands.entity(entity).despawn();
-            println!("💥 Unité détruite !");
         }
     }
 }

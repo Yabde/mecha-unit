@@ -14,3 +14,9 @@ pub struct Team(pub u8);
 
 #[derive(Component)]
 pub struct MeleeRange(pub f32);
+
+/// Texte flottant qui s'élève et disparaît pour signaler les dégâts
+#[derive(Component)]
+pub struct DamagePopup {
+    pub lifetime: Timer,
+}
