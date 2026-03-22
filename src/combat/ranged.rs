@@ -104,3 +104,29 @@ pub fn apply_projectile_hits(
         commands.entity(entity).remove::<ProjectileHit>();
     }
 }
+
+/// Affiche un cercle de portee en pointilles autour des unites de distance selectionnees
+pub fn draw_range_indicators(
+    mut gizmos: Gizmos,
+    q_ranged: Query<(&Transform, &RangedAttack), With<crate::core::components::Selected>>,
+) {
+    for (transform, ranged) in q_ranged.iter() {
+        let center = transform.translation.truncate();
+        let radius = ranged.range;
+        let segments = 48; // Nombre total de segments
+        let dash_ratio = 0.5; // 50% trait, 50% vide
+
+        for i in 0..segments {
+            // On ne dessine que les segments pairs (effet pointille)
+            if i % 2 != 0 { continue; }
+
+            let angle_start = (i as f32 / segments as f32) * std::f32::consts::TAU;
+            let angle_end = ((i as f32 + dash_ratio * 2.0) / segments as f32) * std::f32::consts::TAU;
+
+            let start = center + Vec2::new(angle_start.cos(), angle_start.sin()) * radius;
+            let end = center + Vec2::new(angle_end.cos(), angle_end.sin()) * radius;
+
+            gizmos.line_2d(start, end, Color::srgba(1.0, 1.0, 0.0, 0.35));
+        }
+    }
+}

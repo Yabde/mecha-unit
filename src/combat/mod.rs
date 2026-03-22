@@ -6,7 +6,7 @@ pub mod ranged;
 use bevy::prelude::*;
 use events::AttackEvent;
 use systems::{detect_combat, apply_damage, handle_death, animate_damage_popups};
-use ranged::{detect_ranged_combat, move_projectiles, apply_projectile_hits};
+use ranged::{detect_ranged_combat, move_projectiles, apply_projectile_hits, draw_range_indicators};
 
 pub struct CombatPlugin;
 
@@ -21,6 +21,7 @@ impl Plugin for CombatPlugin {
                apply_projectile_hits,
                animate_damage_popups, 
                handle_death,
+               draw_range_indicators,
            ).chain());
     }
 }
