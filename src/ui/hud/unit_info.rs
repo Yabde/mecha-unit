@@ -79,6 +79,7 @@ pub fn update_unit_info_panel(
             UnitType::MeleeA => "MeleeA (Carre)",
             UnitType::MeleeB => "MeleeB (Cercle)",
             UnitType::MeleeC => "MeleeC (Triangle)",
+            UnitType::RangedA => "RangedA (Losange)",
         };
 
         for mut text in q_type_text.iter_mut() {

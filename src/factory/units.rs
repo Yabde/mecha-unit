@@ -92,3 +92,43 @@ pub fn spawn_melee(
         ));
     }).id()
 }
+
+pub fn spawn_ranged(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
+    position: Vec2,
+    team: u8,
+) -> Entity {
+    let color = if team == 1 { Color::srgb(0.9, 0.6, 0.0) } else { Color::srgb(0.4, 0.3, 0.0) }; // Orange/ambré
+
+    // Losange (diamond) : un carre tourne a 45 degrés
+    let mesh = meshes.add(Rectangle::new(28.0, 28.0));
+    let border_mesh = meshes.add(Rectangle::new(32.0, 32.0));
+
+    commands.spawn((
+        UnitType::RangedA,
+        Mesh2d(mesh),
+        MeshMaterial2d(materials.add(color)),
+        Transform::from_xyz(position.x, position.y, 1.0)
+            .with_rotation(Quat::from_rotation_z(std::f32::consts::FRAC_PI_4)), // 45 degrés = losange !
+        Speed(120.0), // Plus lent que les melee
+        SelectionCollider(20.0),
+        PhysicalCollider(14.0),
+        Team(team),
+        Health(80.0), // Fragile
+        Damage(12.0),
+        AttackTimer(Timer::from_seconds(1.2, TimerMode::Once)),
+        crate::combat::components::RangedAttack {
+            range: 150.0,
+            projectile_speed: 300.0,
+        },
+    ))
+    .with_children(|parent| {
+        parent.spawn((
+            Mesh2d(border_mesh),
+            MeshMaterial2d(materials.add(Color::BLACK)),
+            Transform::from_xyz(0.0, 0.0, -0.1),
+        ));
+    }).id()
+}

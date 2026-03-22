@@ -20,3 +20,19 @@ pub struct MeleeRange(pub f32);
 pub struct DamagePopup {
     pub lifetime: Timer,
 }
+
+/// Composant d'attaque à distance (tourelles, unités ranged)
+#[derive(Component)]
+pub struct RangedAttack {
+    pub range: f32,
+    pub projectile_speed: f32,
+}
+
+/// Projectile en vol vers une cible
+#[derive(Component)]
+pub struct Projectile {
+    pub target: Entity,
+    pub damage: f32,
+    pub speed: f32,
+    pub origin: Vec2, // Position de depart (pour le trait visuel)
+}

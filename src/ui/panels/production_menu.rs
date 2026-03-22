@@ -34,6 +34,7 @@ pub fn setup_production_menu(mut commands: Commands) {
     spawn_action_button(&mut commands, parent, "MeleeA (100)", ProductionButton(UnitType::MeleeA));
     spawn_action_button(&mut commands, parent, "MeleeB (100)", ProductionButton(UnitType::MeleeB));
     spawn_action_button(&mut commands, parent, "MeleeC (100)", ProductionButton(UnitType::MeleeC));
+    spawn_action_button(&mut commands, parent, "RangedA (120)", ProductionButton(UnitType::RangedA));
 }
 
 pub fn update_production_menu_visibility(

@@ -59,7 +59,14 @@ pub fn spawn_construction(
     ));
 
     if building_type == BuildingType::Turret {
-        entity.insert(Damage(15.0));
+        entity.insert((
+            Damage(15.0),
+            crate::combat::components::AttackTimer(Timer::from_seconds(1.5, TimerMode::Once)),
+            crate::combat::components::RangedAttack {
+                range: 200.0,
+                projectile_speed: 350.0,
+            },
+        ));
     } else if building_type == BuildingType::Barracks {
         entity.insert(crate::building::components::ProductionQueue {
             queue: Vec::new(),

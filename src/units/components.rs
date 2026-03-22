@@ -8,6 +8,7 @@ pub enum UnitType {
     MeleeA,
     MeleeB,
     MeleeC,
+    RangedA,
     Worker,
 }
 
@@ -16,6 +17,7 @@ impl UnitType {
         match self {
             UnitType::Worker => 50,
             UnitType::MeleeA | UnitType::MeleeB | UnitType::MeleeC => 100,
+            UnitType::RangedA => 120,
         }
     }
 
@@ -23,6 +25,7 @@ impl UnitType {
         match self {
             UnitType::Worker => 2.0,
             UnitType::MeleeA | UnitType::MeleeB | UnitType::MeleeC => 4.0,
+            UnitType::RangedA => 5.0,
         }
     }
 }

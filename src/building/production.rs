@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::building::components::ProductionQueue;
-use crate::factory::units::{spawn_worker, spawn_melee};
+use crate::factory::units::{spawn_worker, spawn_melee, spawn_ranged};
 use crate::units::components::UnitType;
 use crate::combat::components::Team;
 
@@ -26,6 +26,9 @@ pub fn process_production_queues(
             match unit_to_spawn {
                 UnitType::Worker => { 
                     spawn_worker(&mut commands, &mut meshes, &mut materials, pos, team_id); 
+                },
+                UnitType::RangedA => {
+                    spawn_ranged(&mut commands, &mut meshes, &mut materials, pos, team_id);
                 },
                 _ => { 
                     spawn_melee(&mut commands, &mut meshes, &mut materials, unit_to_spawn, pos, team_id); 
