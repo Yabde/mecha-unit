@@ -34,7 +34,7 @@ pub fn setup_minimap(mut commands: Commands, mut images: ResMut<Assets<Image>>) 
         },
         RenderTarget::Image(image_handle.clone().into()),
         Projection::Orthographic(OrthographicProjection {
-            scale: 4.0, // Zoom arrière x4
+            scale: 14.0, // Zoom arriere pour couvrir la carte 4000x3000
             ..OrthographicProjection::default_2d()
         }),
         MinimapCamera,

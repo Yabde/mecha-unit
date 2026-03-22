@@ -9,13 +9,28 @@ pub fn spawn_economy_entities(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    // ---- BASE (Team 1) ----
-    crate::factory::buildings::spawn_base(&mut commands, &mut meshes, &mut materials, Vec2::new(-200.0, -100.0), 1);
+    // ---- BASE (Team 1) ---- Bas-gauche de la carte
+    crate::factory::buildings::spawn_base(&mut commands, &mut meshes, &mut materials, Vec2::new(-1600.0, -1100.0), 1);
 
-    // ---- CRISTAUX (Map) ----
-    for i in 0..4 {
-        let pos = Vec2::new(150.0 + (i as f32 * 50.0), 150.0 - (i as f32 * 30.0));
-        crate::factory::resources::spawn_crystal(&mut commands, &mut meshes, &mut materials, pos, 200.0);
+    // ---- CRISTAUX proches de la base joueur ----
+    for i in 0..5 {
+        let pos = Vec2::new(-1200.0 + (i as f32 * 60.0), -900.0 - (i as f32 * 40.0));
+        crate::factory::resources::spawn_crystal(&mut commands, &mut meshes, &mut materials, pos, 300.0);
+    }
+
+    // ---- CRISTAUX zone neutre (centre) ----
+    for i in 0..3 {
+        let pos = Vec2::new(-100.0 + (i as f32 * 100.0), 50.0 - (i as f32 * 60.0));
+        crate::factory::resources::spawn_crystal(&mut commands, &mut meshes, &mut materials, pos, 500.0);
+    }
+
+    // ---- BASE (Team 2 - IA) ---- Haut-droite de la carte
+    crate::factory::buildings::spawn_base(&mut commands, &mut meshes, &mut materials, Vec2::new(1600.0, 1100.0), 2);
+
+    // ---- CRISTAUX proches de la base IA ----
+    for i in 0..5 {
+        let pos = Vec2::new(1200.0 - (i as f32 * 60.0), 900.0 + (i as f32 * 40.0));
+        crate::factory::resources::spawn_crystal(&mut commands, &mut meshes, &mut materials, pos, 300.0);
     }
 }
 

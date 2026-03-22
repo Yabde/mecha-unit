@@ -9,9 +9,10 @@ mod minimap;
 mod economy;
 mod ui;
 mod factory;
-mod building; // NEW
+mod building;
+mod map;
 
-// Marqueur pour distinguer la caméra principale du jeu de celle de la minimap
+// Marqueur pour distinguer la camera principale du jeu de celle de la minimap
 #[derive(Component)]
 pub struct MainCamera;
 
@@ -22,7 +23,7 @@ fn main() {
         
         .add_plugins(DefaultPlugins)
 
-        // On ajoute nos propres plugins métier
+        // On ajoute nos propres plugins metier
         .add_plugins(units::UnitsPlugin)
         .add_plugins(input::InputPlugin)
         .add_plugins(combat::CombatPlugin)
@@ -30,6 +31,7 @@ fn main() {
         .add_plugins(economy::EconomyPlugin)
         .add_plugins(ui::UiPlugin)
         .add_plugins(building::BuildingPlugin)
+        .add_plugins(map::MapPlugin)
 
         .add_systems(Startup, setup_camera)
         
@@ -40,5 +42,8 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((
         Camera2d, 
         MainCamera,
+        // Camera commence sur la base du joueur
+        Transform::from_xyz(-1600.0, -1100.0, 0.0),
+        Projection::Orthographic(OrthographicProjection::default_2d()),
     ));
 }

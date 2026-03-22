@@ -8,16 +8,16 @@ pub fn setup_units(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    // Team 1 (Allies)
-    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeA, Vec2::new(-100.0, 0.0), 1);
-    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeB, Vec2::new(0.0, 0.0), 1);
-    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeC, Vec2::new(100.0, 0.0), 1);
-    spawn_worker(&mut commands, &mut meshes, &mut materials, Vec2::new(0.0, -150.0), 1);
+    // Team 1 (Allies) - pres de la base joueur (-1600, -1100)
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeA, Vec2::new(-1500.0, -1000.0), 1);
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeB, Vec2::new(-1450.0, -1050.0), 1);
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeC, Vec2::new(-1400.0, -1000.0), 1);
+    spawn_worker(&mut commands, &mut meshes, &mut materials, Vec2::new(-1550.0, -1050.0), 1);
 
-    // Team 2 (Ennemis)
-    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeA, Vec2::new(250.0, 0.0), 2);
-    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeB, Vec2::new(250.0, 0.0), 2);
-    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeC, Vec2::new(250.0, 0.0), 2);
+    // Team 2 (Ennemis) - pres de la base IA (1600, 1100)
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeA, Vec2::new(1500.0, 1000.0), 2);
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeB, Vec2::new(1450.0, 1050.0), 2);
+    spawn_melee(&mut commands, &mut meshes, &mut materials, UnitType::MeleeC, Vec2::new(1400.0, 1000.0), 2);
 }
 
 pub fn animate_selection(mut query: Query<(&mut Transform, Option<&Selected>)>) {
